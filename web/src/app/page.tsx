@@ -3,6 +3,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useRef, useState } from "react";
 
+const API_URL = "http://localhost:8000";
 const mimeType = "audio/webm";
 
 export enum RecordingStatus {
@@ -12,9 +13,8 @@ export enum RecordingStatus {
 }
 
 export type OrderResponse = {
-  text: string;
+  transcription: string;
 };
-const API_URL = "http://localhost:8000";
 
 export default function Home() {
   const [permission, setPermission] = useState<boolean>(false);
@@ -26,6 +26,10 @@ export default function Home() {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [audio, setAudio] = useState<string | null>(null);
+
+  const [receivedTranscription, setReceivedTranscription] =
+    useState<boolean>(false);
+  const [transcription, setTranscription] = useState<string>("");
 
   const getMicrophonePermission = async () => {
     if ("MediaRecorder" in window) {
@@ -80,13 +84,16 @@ export default function Home() {
 
   const submitOrder = () => {
     if (audio) {
-      let fd = new FormData();
-      fd.append("audio", audio);
+      setReceivedTranscription(false);
+      fetch(audio).then(async (res) => {
+        let formData = new FormData();
+        formData.append("file", await res.blob(), "order.webm");
 
-      // TODO: Send POST Request
-      alert("Send POST Request (not implemented yet)");
-      return axios.post<OrderResponse>(API_URL + "/order", fd).then((res) => {
-        return res;
+        axios.post(API_URL + "/order", formData).then((res) => {
+          const data: OrderResponse = res.data as OrderResponse;
+          setReceivedTranscription(true);
+          setTranscription(data.transcription);
+        });
       });
     }
   };
@@ -95,9 +102,9 @@ export default function Home() {
   const interpretOrder = () => {};
 
   return (
-    <main className="flex min-h-screen flex-col items-center">
+    <main className="flex flex-col min-h-screen items-center space-y-10">
       <div className="mt-20 font-bold text-5xl">Noodle Shop</div>
-      <div className="m-5 text-2xl">Order using Your Voice!</div>
+      <div className="text-2xl">Order using Your Voice!</div>
       {!permission && (
         <button
           className="flex select-none p-3 w-96 h-20 items-center justify-center text-center border-2 border-gray-500 hover:bg-gray-700 active:bg-gray-500 text-2xl"
@@ -127,8 +134,8 @@ export default function Home() {
         </div>
       )}
       {audio && (
-        <div className="flex flex-col m-20">
-          <div className="text-2xl">Your Order</div>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="m-5 text-3xl">Your Order</div>
           <button
             className="flex select-none p-3 w-96 h-20 items-center justify-center text-center border-2 border-gray-500 hover:bg-gray-700 active:bg-gray-500 text-2xl"
             onClick={submitOrder}
@@ -136,12 +143,16 @@ export default function Home() {
             Submit Order
           </button>
 
-          {/* TODO: Transcription Return from API */}
-          <div>Place Holder: Order Return From API</div>
+          {receivedTranscription && (
+            <div className="m-5 text-2xl">
+              <span>Transcription:&nbsp;</span>
+              <span className="text-2xl font-bold">{transcription}</span>
+            </div>
+          )}
         </div>
       )}
       {audio && (
-        <div className="flex flex-col m-20 items-center justify-center">
+        <div className="flex flex-col items-center justify-center">
           <div className="text-2xl">Recording</div>
           <audio className="mt-5" src={audio} controls></audio>
           <Link

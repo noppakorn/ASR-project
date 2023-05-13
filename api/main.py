@@ -1,10 +1,18 @@
 from fastapi import Depends, FastAPI, UploadFile
 from pydub import AudioSegment
 import io
+from fastapi.middleware.cors import CORSMiddleware
 
 from model import Model, get_model
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post("/order")

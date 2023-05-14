@@ -1,7 +1,7 @@
 "use client";
 import axios from "axios";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const API_URL = "http://localhost:8000";
 const mimeType = "audio/webm";
@@ -29,7 +29,17 @@ export default function Home() {
 
   const [receivedTranscription, setReceivedTranscription] =
     useState<boolean>(false);
-  const [transcription, setTranscription] = useState<string>("");
+  const [transcription, setTranscription] = useState<string>("Unknown");
+
+  const [noodle, setNoodle] = useState<string>("");
+  const [soup, setSoup] = useState<string>("");
+  const [spicy, setSpicy] = useState<string>("");
+
+  const resetNoodle = () => {
+    setNoodle("Unknown");
+    setSoup("Default (น้ำ)");
+    setSpicy("Default (ไม่เผ็ด)");
+  };
 
   const getMicrophonePermission = async () => {
     if ("MediaRecorder" in window) {
@@ -52,6 +62,9 @@ export default function Home() {
 
   const startRecording = async () => {
     if (stream) {
+      // Clear the noodle status
+      resetNoodle();
+
       setRecordingStatus(RecordingStatus.Recording);
       const media = new MediaRecorder(stream, { mimeType });
       mediaRecorder.current = media;
@@ -98,11 +111,42 @@ export default function Home() {
     }
   };
 
-  // TODO: Rule based order interpretation
-  const interpretOrder = () => {};
+  useEffect(() => {
+    resetNoodle();
+    let cleanedTranscription = transcription.replaceAll(" ", "");
+
+    if (cleanedTranscription.includes("บะหมี่")) {
+      setNoodle("บะหมี่");
+    } else if (cleanedTranscription.includes("เส้นเล็ก")) {
+      setNoodle("เส้นเล็ก");
+    } else if (cleanedTranscription.includes("เส้นใหญ่")) {
+      setNoodle("เส้นใหญ่");
+    } else {
+      setNoodle("Unknown");
+    }
+
+    if (cleanedTranscription.includes("น้ำ")) {
+      setSoup("น้ำ");
+    } else if (cleanedTranscription.includes("แห้ง")) {
+      setSoup("แห้ง");
+    } else {
+      setSpicy("Default (น้ำ)");
+    }
+
+    if (cleanedTranscription.includes("ไม่เผ็ด")) {
+      setSpicy("ไม่เผ็ด");
+    } else if (
+      cleanedTranscription.includes("เผ็ด") ||
+      cleanedTranscription.includes("ต้มยำ")
+    ) {
+      setSpicy("เผ็ด");
+    } else {
+      setSpicy("Default (ไม่เผ็ด)");
+    }
+  }, [transcription]);
 
   return (
-    <main className="flex flex-col min-h-screen items-center space-y-10">
+    <main className="flex flex-col min-h-screen max-h-screen items-center space-y-10">
       <div className="mt-20 font-bold text-5xl">Noodle Shop</div>
       <div className="text-2xl">Order using Your Voice!</div>
       {!permission && (
@@ -144,14 +188,37 @@ export default function Home() {
           </button>
 
           {receivedTranscription && (
-            <div className="m-5 text-2xl">
-              <span>Transcription:&nbsp;</span>
-              <span className="text-2xl font-bold">{transcription}</span>
-            </div>
+            <>
+              <div className="m-5 text-2xl">
+                <span className="font-bold">Transcription:&nbsp;</span>
+                <span className="">{transcription}</span>
+              </div>
+              <div className="text-2xl">
+                <span className="font-bold">Noodle Type:&nbsp;</span>
+                {noodle === "Unknown" ? (
+                  <span>Unknown Noodle Type</span>
+                ) : (
+                  <span className="">{noodle}</span>
+                )}
+              </div>
+              {noodle !== "Unknown" && (
+                <>
+                  <div className="m-2 text-2xl">
+                    <span className="font-bold">Soup:&nbsp;</span>
+                    <span>{soup}</span>
+                  </div>
+                  <div className="m-2 text-2xl">
+                    <span className="font-bold">Spiciness:&nbsp;</span>
+                    <span>{spicy}</span>
+                  </div>
+                </>
+              )}
+            </>
           )}
         </div>
       )}
-      {audio && (
+      {/* FOR AUDIO DEBUG */}
+      {/* {audio && (
         <div className="flex flex-col items-center justify-center">
           <div className="text-2xl">Recording</div>
           <audio className="mt-5" src={audio} controls></audio>
@@ -162,7 +229,7 @@ export default function Home() {
             Download
           </Link>
         </div>
-      )}
+      )} */}
     </main>
   );
 }

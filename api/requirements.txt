@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+pydub
+https://github.com/kpu/kenlm/archive/master.zip
+
+transformers
+torch
+torchvision
+torchaudio
+pyctcdecode

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 const API_URL = "http://localhost:8000";
 const mimeType = "audio/webm";
 
-export enum RecordingStatus {
+enum RecordingStatus {
   Recording,
   Inactive,
   Paused,

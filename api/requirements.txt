@@ -2,10 +2,13 @@ fastapi
 uvicorn
 python-multipart
 pydub
+
+pyctcdecode
 https://github.com/kpu/kenlm/archive/master.zip
 
 transformers
+
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch
 torchvision
 torchaudio
-pyctcdecode

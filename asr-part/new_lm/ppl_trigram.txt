@@ -1,0 +1,4 @@
+file train.txt: 96 sentences, 547 words, 0 OOVs
+0 zeroprobs, logprob= -533.587 ppl= 6.75833 ppl1= 9.45101
+file test.txt: 24 sentences, 157 words, 7 OOVs
+0 zeroprobs, logprob= -208.702 ppl= 15.8284 ppl1= 24.6234

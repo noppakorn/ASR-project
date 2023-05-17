@@ -6,7 +6,7 @@ services:
       - "3000:3000"
 
   api:
-    image: ghcr.io/noppakorn/asr-project/api:2023-05-15
+    image: ghcr.io/noppakorn/asr-project/api:2023-05-17
     container_name: noodle-shop-api
     ports:
       - "8000:8000"
